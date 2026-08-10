@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model Settings {
+  id              String   @id @default(uuid())
+  shop            String   @unique
+  provider        String   @default("Meta")
+  accessToken     String?
+  phoneNumberId   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Contact {
+  id               String   @id @default(uuid())
+  shop             String
+  shopifyCustomerId String
+  name             String?
+  phone            String?
+  optInStatus      String   @default("Pending")
+  totalOrders      Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@unique([shop, shopifyCustomerId])
+}
+
+model Campaign {
+  id            String   @id @default(uuid())
+  shop          String
+  name          String
+  audience      String
+  sentCount     Int      @default(0)
+  status        String   @default("Draft")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Automation {
+  id            String   @id @default(uuid())
+  shop          String
+  eventType     String
+  isActive      Boolean  @default(false)
+  templateName  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([shop, eventType])
+}
