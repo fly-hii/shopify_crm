@@ -37,6 +37,48 @@ export const action = async ({ request }) => {
   return json({ success: true });
 };
 
+const automationConfigs = [
+  {
+    title: "Abandoned Cart",
+    type: "CHECKOUTS_UPDATE",
+    description: "Automatically sends a WhatsApp reminder 30 minutes after a customer abandons their cart, recovering lost sales.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="21" r="1" />
+        <circle cx="20" cy="21" r="1" />
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+      </svg>
+    ),
+  },
+  {
+    title: "Order Confirmation",
+    type: "ORDERS_CREATE",
+    description: "Sends an instant receipt and thank-you message via WhatsApp immediately after a customer completes a purchase.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <polyline points="10 9 9 9 8 9" />
+      </svg>
+    ),
+  },
+  {
+    title: "Shipping Update",
+    type: "FULFILLMENTS_CREATE",
+    description: "Notifies customers via WhatsApp when their order has been fulfilled and shipped, including tracking details.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="3" width="15" height="13" />
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+        <circle cx="5.5" cy="18.5" r="2.5" />
+        <circle cx="18.5" cy="18.5" r="2.5" />
+      </svg>
+    ),
+  },
+];
+
 export default function Automations() {
   const { automations } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
@@ -70,49 +112,67 @@ export default function Automations() {
     }
   };
 
-  const renderAutomationCard = (title: string, type: string, description: string) => {
-    const isActive = getStatus(type);
-    
-    return (
-      <div className="glass-panel" key={type}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <h2>{title}</h2>
-          <span className={`status-badge ${isActive ? 'status-active' : 'status-draft'}`}>
-            {isActive ? 'Active' : 'Inactive'}
-          </span>
-        </div>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '12px', marginBottom: '24px' }}>
-          {description}
-        </p>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button 
-            className={isActive ? "btn-secondary" : "btn-primary"}
-            onClick={() => toggleAutomation(type, isActive)}
-          >
-            {isActive ? 'Disable' : 'Enable'}
-          </button>
-          <button className="btn-secondary" onClick={() => openConfig(type)}>
-            Configure
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <Page fullWidth>
       <div className="animate-fade-in">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h1>Automations</h1>
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="page-header-left">
+            <div className="page-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </div>
+            <div>
+              <div className="page-header-title">Automations</div>
+              <div className="page-header-subtitle">Event-driven WhatsApp messages triggered by store activity</div>
+            </div>
+          </div>
         </div>
-        
-        <div className="card-grid">
-          {renderAutomationCard("Abandoned Cart", "CHECKOUTS_UPDATE", "Sends a WhatsApp message 30 minutes after a cart is abandoned.")}
-          {renderAutomationCard("Order Confirmation", "ORDERS_CREATE", "Sends a receipt and thank you message immediately after purchase.")}
-          {renderAutomationCard("Shipping Update", "FULFILLMENTS_CREATE", "Notifies customers when their order has been fulfilled.")}
+
+        {/* Automation Cards */}
+        <div className="card-grid-3 stagger-children">
+          {automationConfigs.map(({ title, type, description, icon }) => {
+            const isActive = getStatus(type);
+            return (
+              <div
+                className={`glass-panel automation-card ${isActive ? 'automation-card--active' : 'automation-card--inactive'}`}
+                key={type}
+              >
+                <div className="automation-card-header">
+                  <div className="automation-card-icon">
+                    {icon}
+                  </div>
+                  <div className="automation-card-info">
+                    <div className="automation-card-title">{title}</div>
+                    <span className={`status-badge ${isActive ? 'status-active' : 'status-inactive'}`}>
+                      {isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+                <p className="automation-card-desc">{description}</p>
+                <div className="automation-card-actions">
+                  <button
+                    className={isActive ? "btn-danger" : "btn-primary"}
+                    onClick={() => toggleAutomation(type, isActive)}
+                  >
+                    {isActive ? 'Disable' : 'Enable'}
+                  </button>
+                  <button className="btn-secondary" onClick={() => openConfig(type)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                    Configure
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
+      {/* Configure Modal */}
       <Modal
         open={activeModal !== null}
         onClose={() => setActiveModal(null)}
@@ -129,18 +189,16 @@ export default function Automations() {
         ]}
       >
         <Modal.Section>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>WhatsApp Template Name</label>
-              <input 
-                type="text" 
-                value={templateInput} 
-                onChange={(e) => setTemplateInput(e.target.value)} 
-                placeholder="e.g. order_confirmation" 
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }} 
-              />
-              <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>This must exactly match an approved template in your Meta Business Manager for this specific event type.</p>
-            </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">WhatsApp Template Name</label>
+            <input 
+              type="text"
+              className="form-input"
+              value={templateInput} 
+              onChange={(e) => setTemplateInput(e.target.value)} 
+              placeholder="e.g. order_confirmation" 
+            />
+            <span className="form-hint">Must match an approved template in your Meta Business Manager for this event type.</span>
           </div>
         </Modal.Section>
       </Modal>

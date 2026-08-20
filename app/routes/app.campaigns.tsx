@@ -69,6 +69,15 @@ export const action = async ({ request }) => {
   return json({ success: true });
 };
 
+function getStatusClass(status: string) {
+  const s = status.toLowerCase();
+  if (s === 'completed') return 'status-completed';
+  if (s === 'sending') return 'status-sending';
+  if (s.includes('failed')) return 'status-failed';
+  if (s === 'draft') return 'status-draft';
+  return 'status-inactive';
+}
+
 export default function Campaigns() {
   const { campaigns } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -103,42 +112,82 @@ export default function Campaigns() {
   return (
     <Page fullWidth>
       <div className="animate-fade-in">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h1>Campaigns</h1>
-          <button className="btn-primary" onClick={toggleModal}>+ New Campaign</button>
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="page-header-left">
+            <div className="page-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </div>
+            <div>
+              <div className="page-header-title">
+                Campaigns
+                <span className="page-header-badge">{campaigns.length} total</span>
+              </div>
+              <div className="page-header-subtitle">Create and manage bulk WhatsApp campaigns</div>
+            </div>
+          </div>
+          <button className="btn-primary" onClick={toggleModal}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Campaign
+          </button>
         </div>
         
+        {/* Campaigns Table */}
         <div className="glass-panel">
-          <h2>All Campaigns</h2>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Audience</th>
-                <th>Sent</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.length === 0 ? (
-                 <tr>
-                    <td colSpan={4} style={{ textAlign: "center", padding: "32px" }}>No campaigns yet. Click New Campaign to get started.</td>
-                 </tr>
-              ) : (
-                campaigns.map((c: any) => (
+          <div className="section-header">
+            <h2>All Campaigns</h2>
+          </div>
+
+          {campaigns.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </div>
+              <div className="empty-state-title">No campaigns yet</div>
+              <div className="empty-state-desc">Create your first WhatsApp campaign to start engaging with your customers at scale.</div>
+              <button className="btn-primary" onClick={toggleModal}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Create First Campaign
+              </button>
+            </div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Audience</th>
+                  <th>Sent</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaigns.map((c: any) => (
                   <tr key={c.id}>
-                    <td>{c.name}</td>
+                    <td style={{ fontWeight: 600 }}>{c.name}</td>
                     <td>{c.audience}</td>
-                    <td>{c.sentCount}</td>
-                    <td><span className={`status-badge ${c.status === 'Completed' ? 'status-active' : 'status-draft'}`}>{c.status}</span></td>
+                    <td>{c.sentCount.toLocaleString()}</td>
+                    <td><span className={`status-badge ${getStatusClass(c.status)}`}>{c.status}</span></td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
+      {/* Create Campaign Modal */}
       <Modal
         open={active}
         onClose={toggleModal}
@@ -156,38 +205,38 @@ export default function Campaigns() {
         ]}
       >
         <Modal.Section>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Campaign Name</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div className="form-group">
+              <label className="form-label">Campaign Name</label>
               <input 
-                type="text" 
+                type="text"
+                className="form-input"
                 value={name} 
                 onChange={(e) => handleNameChange(e.target.value)} 
                 placeholder="e.g. Summer Sale Announcement" 
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }} 
               />
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Audience</label>
+            <div className="form-group">
+              <label className="form-label">Audience</label>
               <select 
+                className="form-select"
                 value={audience} 
                 onChange={(e) => setAudience(e.target.value)}
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
               >
                 <option value="All Subscribed">All Subscribed Contacts</option>
                 <option value="VIP Customers">VIP Customers (5+ orders)</option>
               </select>
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>WhatsApp Template Name</label>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">WhatsApp Template Name</label>
               <input 
-                type="text" 
+                type="text"
+                className="form-input"
                 value={templateName} 
                 onChange={(e) => setTemplateName(e.target.value)} 
                 placeholder="marketing_promo" 
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }} 
               />
-              <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>This must exactly match an approved template in your Meta Business Manager.</p>
+              <span className="form-hint">Must match an approved template in your Meta Business Manager.</span>
             </div>
           </div>
         </Modal.Section>
